@@ -154,7 +154,7 @@ func lsone(c *clnt.Clnt, s string, long bool) {
 		defer file.Close()
 		for {
 			d, oserr := file.Readdir(0)
-			if oserr != nil {
+			if oserr != nil && oserr != io.EOF {
 				fmt.Fprintf(os.Stderr, "error reading dir: %v\n", oserr)
 			}
 			if d == nil || len(d) == 0 {
@@ -183,7 +183,7 @@ func cmdls(c *clnt.Clnt, s []string) {
 		lsone(c, cwd, long)
 	} else {
 		for _, d := range s {
-			lsone(c, cwd+d, long)
+			lsone(c, path.Join(cwd,d), long)
 		}
 	}
 }
@@ -241,7 +241,7 @@ Outer:
 // Create a single directory on remote server
 func mkone(c *clnt.Clnt, s string) {
 	fname := normpath(s)
-	file, oserr := c.FCreate(fname, 0777|p.DMDIR, p.OWRITE)
+	file, oserr := c.FCreate(fname, 0777|p.DMDIR, p.OREAD)
 	if oserr != nil {
 		fmt.Fprintf(os.Stderr, "error creating directory %s: %v\n", fname, oserr)
 		return
